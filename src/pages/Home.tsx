@@ -1,47 +1,129 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { fetchMarketsBRL, type MarketCoin } from "../services/coingecko";
+import { parseCoinIds } from "../utils/coinIds";
 import { formatBRL, formatPercent } from "../utils/format";
 
 export function Home() {
-  const [loading, setLoading] = useState(false);
+  // Controlled input for comma-separated ids
+  const [input, setInput] = useState<string>("bitcoin, ethereum");
+  // Data and UI state
   const [data, setData] = useState<MarketCoin[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleGetData() {
+  // Keep a ref to the current AbortController to cancel previous requests
+  const abortRef = useRef<AbortController | null>(null);
+
+  /**
+   * Validate and fetch data from CoinGecko using user-provided ids.
+   * - Parses the input string into valid ids.
+   * - Validates count (avoid overly large requests).
+   * - Cancels any in-flight request before starting a new one.
+   */
+  async function handleGetData(e?: React.FormEvent) {
+    e?.preventDefault();
+
+    // Reset state for a clean request cycle
+    setError(null);
+
+    // Parse and validate ids
+    const ids = parseCoinIds(input);
+    if (ids.length === 0) {
+      setError("Digite pelo menos 1 id de moeda (ex.: bitcoin, ethereum).");
+      setData([]);
+      return;
+    }
+
+    // Soft limit to avoid huge queries and rate limiting issues
+    const MAX_IDS = 50;
+    if (ids.length > MAX_IDS) {
+      setError(
+        `Você inseriu ${ids.length} ids. O máximo recomendado é ${MAX_IDS}.`
+      );
+      setData([]);
+      return;
+    }
+
+    // Cancel any in-flight request (good UX practice)
+    if (abortRef.current) {
+      abortRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setLoading(true);
+
     try {
-      setError(null);
-      setLoading(true);
-      const res = await fetchMarketsBRL(["bitcoin", "ethereum", "ripple"]);
+      const res = await fetchMarketsBRL(ids, { signal: controller.signal });
       setData(res);
-      console.log("CoinGecko data:", data);
-      // Neste começo, só logamos. Depois renderizamos na UI.
-    } catch (err) {
+      console.log("CoinGecko data:", res);
+    } catch (err: unknown) {
+      // If aborted, we simply ignore and keep UI stable
+      if (
+        err &&
+        typeof err === "object" &&
+        "name" in err &&
+        (err as { name?: string }).name === "AbortError"
+      )
+        return;
       console.error("Erro ao buscar CoinGecko:", err);
-      const errorMessage =
-        err instanceof Error ? err.message : "Falha ao buscar dados";
-      setError(errorMessage);
+      setError(
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message?: string }).message)
+          : "Falha ao buscar dados"
+      );
+      setData([]);
     } finally {
-      setLoading(false);
+      // Only clear loading if this is still the latest controller
+      if (abortRef.current === controller) {
+        setLoading(false);
+        abortRef.current = null;
+      }
     }
   }
+
+  // Helper to display the parsed ids under the input (feedback to user)
+  const parsedIds = parseCoinIds(input);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">CriptoTracker</h1>
-      <p className="text-slate-300 mb-6">
-        Clique no botão abaixo para buscar dados do CoinGecko e ver o resultado
-        no console.
-      </p>
-      <div className="mb-6 flex items-center gap-3">
-        <button
-          onClick={handleGetData}
-          disabled={loading}
-          className="inline-flex items-center gap-2 rounded bg-emerald-600 px-4 py-2 font-medium hover:bg-emerald-500 disabled:opacity-60"
-        >
-          {loading ? "Carregando..." : "Get Data"}
-        </button>
-        {error && <span className="text-rose-400 text-sm">{error}</span>}
-      </div>
+
+      {/* Search and action area */}
+      <form onSubmit={handleGetData} className="mb-6 space-y-3">
+        <label className="block text-sm text-slate-300">
+          Digite os ids das moedas separados por vírgula (ex.: bitcoin,
+          ethereum, solana)
+        </label>
+        <div className="flex items-center gap-2">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="bitcoin, ethereum, solana"
+            className="flex-1 rounded border border-slate-700 bg-slate-900 px-3 py-2 outline-none focus:border-slate-500"
+          />
+          <button
+            type="submit"
+            disabled={loading || parsedIds.length === 0}
+            className="inline-flex items-center gap-2 rounded bg-emerald-600 px-4 py-2 font-medium hover:bg-emerald-500 disabled:opacity-60"
+            onClick={() =>
+              !loading && console.log("Fetching for ids:", parsedIds)
+            }
+          >
+            {loading ? "Carregando..." : "Get Data"}
+          </button>
+        </div>
+
+        {/* Validation and feedback */}
+        <div className="text-xs text-slate-400">
+          IDs reconhecidos:{" "}
+          {parsedIds.length > 0 ? parsedIds.join(", ") : "nenhum"}
+        </div>
+
+        {error && <div className="text-sm text-rose-400">{error}</div>}
+      </form>
+
+      {/* Result table */}
       <div className="rounded-lg border border-slate-800 overflow-hidden">
         <div className="p-3 border-b border-slate-800">
           <h2 className="font-medium">Resultado</h2>
@@ -49,7 +131,7 @@ export function Home() {
 
         {data.length === 0 ? (
           <div className="p-4 text-slate-400">
-            Sem dados ainda — clique em “Get Data”.
+            Sem dados ainda — insira os ids e clique em “Get Data”.
           </div>
         ) : (
           <table className="w-full text-sm">
