@@ -21,16 +21,18 @@ export function Home() {
    * - Cancels any in-flight request before starting a new one.
    */
   async function handleGetData(e?: React.FormEvent) {
+    //only calls prevent default when e exists.Avoid
+    //reloading screenwhen the form is sent
     e?.preventDefault();
 
-    // Reset state for a clean request cycle
+    // Reset error befone new search
     setError(null);
 
     // Parse and validate ids
     const ids = parseCoinIds(input);
     if (ids.length === 0) {
       setError("Digite pelo menos 1 id de moeda (ex.: bitcoin, ethereum).");
-      setData([]);
+      setData([]); //MOSTRAR PRO USUARIO
       return;
     }
 
@@ -44,19 +46,22 @@ export function Home() {
       return;
     }
 
-    // Cancel any in-flight request (good UX practice)
+    // Cancel any in-flight request
     if (abortRef.current) {
       abortRef.current.abort();
     }
+
+    /*  creates a new abort controller so this execution
+    can be aorted if necessary */
     const controller = new AbortController();
     abortRef.current = controller;
 
-    setLoading(true);
+    setLoading(true); //updates UI state to show loading symbol
 
     try {
       const res = await fetchMarketsBRL(ids, { signal: controller.signal });
       setData(res);
-      console.log("CoinGecko data:", res);
+      //console.log("CoinGecko data:", res); for debugging
     } catch (err: unknown) {
       // If aborted, we simply ignore and keep UI stable
       if (
@@ -104,7 +109,10 @@ export function Home() {
           />
           <button
             type="submit"
-            disabled={loading || parsedIds.length === 0}
+            //makes the button inactive if its loading, number of ids is 0 or more than 50
+            disabled={
+              loading || parsedIds.length === 0 || parsedIds.length > 50
+            }
             className="inline-flex items-center gap-2 rounded bg-emerald-600 px-4 py-2 font-medium hover:bg-emerald-500 disabled:opacity-60"
             onClick={() =>
               !loading && console.log("Fetching for ids:", parsedIds)
