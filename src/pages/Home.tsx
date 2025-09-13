@@ -17,7 +17,9 @@ export function Home() {
       // Neste começo, só logamos. Depois renderizamos na UI.
     } catch (err) {
       console.error("Erro ao buscar CoinGecko:", err);
-      setError(err?.message ?? "Falha ao buscar dados");
+      const errorMessage =
+        err instanceof Error ? err.message : "Falha ao buscar dados";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
