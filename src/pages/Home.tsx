@@ -158,7 +158,9 @@ export function Home() {
               className={[
                 "h-6 w-6 rounded-full flex items-center justify-center transition-colors",
                 "ring-1 ring-slate-700",
-                showMore
+                data.length === 0
+                  ? "bg-slate-800 text-slate-500 opacity-50 cursor-not-allowed" // estilo desabilitado
+                  : showMore
                   ? "bg-emerald-600 text-white hover:bg-emerald-500"
                   : "bg-slate-800 text-slate-300 hover:bg-slate-700",
               ].join(" ")}
