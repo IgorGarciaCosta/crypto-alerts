@@ -2,16 +2,26 @@ import { useEffect, useState, type SetStateAction } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import type { MarketCoin } from "../services/coingecko";
 
+import { fiatCurrencies } from "../services/coingecko";
+
 /* ---- util simples de conversão BRL ➜ USD (demo) ---- */
-const convert = (brl: number, currency: "BRL" | "USD") =>
-  currency === "BRL" ? brl : brl / 5; // ⇦ só para demo
+const convert = (curr: number, currency: string) => {
+  /* CoinGecko está retornando price em USD. 
++     Para fins de demo:
++       • USD → mantém
++       • BRL → multiplicamos por 5 (exemplo)
++       • Demais moedas → devolvemos o mesmo valor (sem conversão real) */
+  if (currency.toLowerCase() === "brl") return curr * 5;
+  if (currency.toLowerCase() === "usd") return curr;
+  return curr;
+};
 
 type Props = {
   coin: MarketCoin; // moeda que o usuário clicou
   onClose: () => void; // fecha o popup
   onConfirm?: (opts: {
     direction: "above" | "below";
-    currency: "BRL" | "USD";
+    currency: string;
     targetPrice: number;
   }) => void;
 };
@@ -19,12 +29,21 @@ type Props = {
 export default function NotificationPopup({ coin, onClose, onConfirm }: Props) {
   // controls internos do formulário
   const [direction, setDirection] = useState<"above" | "below">("below");
-  const [currency, setCurrency] = useState<"BRL" | "USD">("USD");
+  const [currency, setCurrency] = useState<string>("usd"); // começa em usd
+
+  /* lista vinda do CoinGecko ------------------------------ */
+  const [fiatList, setfiatList] = useState<string[]>([]);
+  useEffect(() => {
+    //resolve a promise exportada de uma vez
+    fiatCurrencies
+      .then(setfiatList)
+      .catch((err) => console.error("Error fetching fiat currencies:", err));
+  }, []);
+
   /* editable price (string -> permite vírgula / ponto) */
   const [targetPrice, setTargetPrice] = useState<string>(
-    convert(coin.current_price, "USD").toFixed(2)
+    convert(coin.current_price, currency).toFixed(2)
   );
-
   /* quando usuário trocar "currency", recalculamos o valor base ---- */
   useEffect(() => {
     setTargetPrice(convert(coin.current_price, currency).toFixed(2));
@@ -81,11 +100,18 @@ export default function NotificationPopup({ coin, onClose, onConfirm }: Props) {
           {/* dropdown currency */}
           <select
             value={currency}
-            onChange={(e) => setCurrency(e.target.value as "BRL" | "USD")}
+            onChange={(e) => setCurrency(e.target.value.toLowerCase())}
             className="rounded bg-slate-800 px-2 py-1 text-sm ring-1 ring-slate-700 focus:outline-none"
           >
-            <option value="BRL">BRL</option>
-            <option value="USD">USD</option>
+            {/* fallback enquanto carrega a lista */}
+            {fiatList.length === 0 && (
+              <option value={currency}>{currency.toUpperCase()}</option>
+            )}
+            {fiatList.map((code) => (
+              <option key={code} value={code}>
+                {code.toUpperCase()}
+              </option>
+            ))}
           </select>
           .
         </p>

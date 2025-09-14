@@ -30,6 +30,14 @@ export async function getFiatVsCurrencies(): Promise<string[]> {
 //LOGICA PARA CAPTAR LISTA DE MOEDAS FIDUCIARUIAS SUPORTADAS PELA API - end
 
 
+
+/**
+ * Exporta diretamente um campo com as moedas fiduciárias suportadas.
+ * Isso evita ter que chamar a função manualmente em cada lugar.
+ */
+export const fiatCurrencies:Promise<string[]> = getFiatVsCurrencies();
+
+
 /**
  * Fetch market data in BRL for a list of CoinGecko ids.
  * - Uses a single request via ids=... to minimize roundtrips.
