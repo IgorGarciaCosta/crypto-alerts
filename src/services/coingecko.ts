@@ -1,3 +1,5 @@
+import currencyCodes from "currency-codes";
+
 export type MarketCoin = {
   id: string;
   symbol: string;
@@ -10,6 +12,24 @@ export type MarketCoin = {
   price_change_percentage_7d_in_currency?: number;
   last_updated?: string;
 };
+
+//LOGICA PARA CAPTAR LISTA DE MOEDAS FIDUCIARUIAS SUPORTADAS PELA API
+
+export async function getFiatVsCurrencies(): Promise<string[]> {
+  // 1. Lista oficial de moedas fiduciárias ISO-4217
+  const fiatSet = new Set(currencyCodes.codes().map(c => c.toLowerCase()));
+
+  // 2. Lista de moedas suportadas pelo CoinGecko
+  const vsCurrencies: string[] = await fetch(
+    "https://api.coingecko.com/api/v3/simple/supported_vs_currencies"
+  ).then(r => r.json());
+
+  // 3. Mantém só as que são fiduciárias
+  return vsCurrencies.filter(c => fiatSet.has(c));
+}
+//LOGICA PARA CAPTAR LISTA DE MOEDAS FIDUCIARUIAS SUPORTADAS PELA API - end
+
+
 /**
  * Fetch market data in BRL for a list of CoinGecko ids.
  * - Uses a single request via ids=... to minimize roundtrips.

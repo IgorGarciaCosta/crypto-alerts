@@ -19,10 +19,10 @@ type Props = {
 export default function NotificationPopup({ coin, onClose, onConfirm }: Props) {
   // controls internos do formulário
   const [direction, setDirection] = useState<"above" | "below">("below");
-  const [currency, setCurrency] = useState<"BRL" | "USD">("BRL");
+  const [currency, setCurrency] = useState<"BRL" | "USD">("USD");
   /* editable price (string -> permite vírgula / ponto) */
   const [targetPrice, setTargetPrice] = useState<string>(
-    convert(coin.current_price, "BRL").toFixed(2)
+    convert(coin.current_price, "USD").toFixed(2)
   );
 
   /* quando usuário trocar "currency", recalculamos o valor base ---- */
