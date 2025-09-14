@@ -1,8 +1,8 @@
 export const formatBRL = (n:number |null |undefined)=>{
     if(n==null) return '-';
-    return new Intl.NumberFormat('pt-BR',{
+    return new Intl.NumberFormat('en-US',{
         style:'currency',
-        currency:'BRL',
+        currency:'USD',
         maximumFractionDigits:2,
     }).format(n);
 };

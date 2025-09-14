@@ -118,8 +118,8 @@ export function Home() {
       {/* Search and action area */}
       <form onSubmit={handleGetData} className="mb-6 space-y-3">
         <label className="block text-sm text-slate-300">
-          Digite os ids das moedas separados por vírgula (ex.: bitcoin,
-          ethereum, solana)
+          Tipe the currency names separated by commas (ex.: bitcoin, ethereum,
+          solana)
         </label>
         <div className="flex items-center gap-2">
           <input
@@ -145,7 +145,7 @@ export function Home() {
 
         {/* Validation and feedback */}
         <div className="text-xs text-slate-400">
-          IDs reconhecidos:{" "}
+          Identified IDs:{" "}
           {parsedIds.length > 0 ? parsedIds.join(", ") : "nenhum"}
         </div>
 
@@ -155,7 +155,7 @@ export function Home() {
       {/* Result table */}
       <div className="rounded-lg border border-slate-800 overflow-hidden">
         <div className="p-3 border-b border-slate-800 flex items-center justify-between">
-          <h2 className="font-medium">Resultado</h2>
+          <h2 className="font-medium">Results</h2>
 
           {/* Right-side round toggle button with tooltip */}
           <div className="relative group">
@@ -183,14 +183,15 @@ export function Home() {
 
         {data.length === 0 ? (
           <div className="p-4 text-slate-400">
-            Sem dados ainda — insira os ids e clique em “Get Data”.
+            No data -- Type the ids and click "Get Data"
           </div>
         ) : (
           <table className="w-full text-sm">
+            {/* table header */}
             <thead className="text-slate-400 bg-slate-900/40">
               <tr className="text-left">
-                <th className="p-3">Moeda</th>
-                <th>Preço</th>
+                <th className="p-3">Currency</th>
+                <th>Price</th>
                 <th>24h</th>
                 {showMore && (
                   <>
@@ -198,11 +199,14 @@ export function Home() {
                     <th>1h</th> <th>7d</th>
                   </>
                 )}
-                <th>Atualizado</th>
+                <th>Updated</th>
                 <th /> {/* coluna para o botão seta */}
               </tr>
             </thead>
+
+            {/* table rows */}
             <tbody>
+              {/* interate over the data and populate table */}
               {data.map((c) => {
                 const change24h =
                   c.price_change_percentage_24h_in_currency ??
@@ -218,12 +222,16 @@ export function Home() {
                         <div>
                           <div className="font-medium">{c.name}</div>
                           <div className="text-xs text-slate-400">
+                            {/*  make the currency abbreaviation under the name all upper case */}
                             {c.symbol.toUpperCase()}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td>{formatBRL(c.current_price)}</td>
+                    <td>
+                      {/* current currency price */}
+                      {formatBRL(c.current_price)}
+                    </td>
                     <td
                       className={
                         change24h != null && change24h >= 0

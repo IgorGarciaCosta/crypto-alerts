@@ -27,7 +27,7 @@ export async function fetchMarketsBRL(
 
 
   const url = new URL("https://api.coingecko.com/api/v3/coins/markets");
-  url.searchParams.set("vs_currency", "brl");
+  url.searchParams.set("vs_currency", "usd");
   if (ids.length) url.searchParams.set("ids", ids.join(","));
   url.searchParams.set("price_change_percentage", "1h,24h,7d");
   url.searchParams.set("order", "market_cap_desc");
