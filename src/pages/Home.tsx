@@ -3,6 +3,9 @@ import { fetchMarketsBRL, type MarketCoin } from "../services/coingecko";
 import { parseCoinIds } from "../utils/coinIds";
 import { ChartBarIcon } from "@heroicons/react/24/solid";
 
+import { ArrowRightCircleIcon } from "@heroicons/react/24/solid";
+import NotificationPopup from "../components/NotificationPopup";
+
 import { formatBRL, formatPercent } from "../utils/format";
 
 export function Home() {
@@ -12,6 +15,13 @@ export function Home() {
   const [data, setData] = useState<MarketCoin[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  //state to control popup visibility
+  const [popupCOin, setPopupCoin] = useState<MarketCoin | null>(null);
+
+  function openPopup(coin: MarketCoin) {
+    setPopupCoin(coin);
+  }
 
   const [showMore, setShowMore] = useState<boolean>(false);
 
@@ -189,6 +199,7 @@ export function Home() {
                   </>
                 )}
                 <th>Atualizado</th>
+                <th /> {/* coluna para o botão seta */}
               </tr>
             </thead>
             <tbody>
@@ -241,6 +252,16 @@ export function Home() {
                           })
                         : "-"}
                     </td>
+                    <td className="pr-3">
+                      {/* botão para abrir popup */}
+                      <button
+                        onClick={() => openPopup(c)}
+                        aria-label="Create alert"
+                        className="h-7 w-7 rounded-full bg-slate-800 text-slate-300 ring-1 ring-slate-700 transition-colors hover:bg-slate-700 hover:text-white"
+                      >
+                        <ArrowRightCircleIcon className="h-4 w-4 mx-auto" />
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
@@ -248,6 +269,15 @@ export function Home() {
           </table>
         )}
       </div>
+      {popupCOin && (
+        <NotificationPopup
+          coin={popupCOin}
+          onClose={() => setPopupCoin(null)}
+          onConfirm={(opts) =>
+            console.log("Alert created >>", { coin: popupCOin.id, ...opts })
+          }
+        />
+      )}
     </main>
   );
 }
