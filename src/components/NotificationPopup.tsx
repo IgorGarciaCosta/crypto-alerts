@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState, type SetStateAction } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import type { MarketCoin } from "../services/coingecko";
+
+/* ---- util simples de conversão BRL ➜ USD (demo) ---- */
+const convert = (brl: number, currency: "BRL" | "USD") =>
+  currency === "BRL" ? brl : brl / 5; // ⇦ só para demo
 
 type Props = {
   coin: MarketCoin; // moeda que o usuário clicou
@@ -8,6 +12,7 @@ type Props = {
   onConfirm?: (opts: {
     direction: "above" | "below";
     currency: "BRL" | "USD";
+    targetPrice: number;
   }) => void;
 };
 
@@ -15,10 +20,23 @@ export default function NotificationPopup({ coin, onClose, onConfirm }: Props) {
   // controls internos do formulário
   const [direction, setDirection] = useState<"above" | "below">("below");
   const [currency, setCurrency] = useState<"BRL" | "USD">("BRL");
+  /* editable price (string -> permite vírgula / ponto) */
+  const [targetPrice, setTargetPrice] = useState<string>(
+    convert(coin.current_price, "BRL").toFixed(2)
+  );
+
+  /* quando usuário trocar "currency", recalculamos o valor base ---- */
+  useEffect(() => {
+    setTargetPrice(convert(coin.current_price, currency).toFixed(2));
+  }, [currency, coin.current_price]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onConfirm?.({ direction, currency });
+    onConfirm?.({
+      direction,
+      currency,
+      targetPrice: parseFloat(targetPrice.replace(",", ".")), // converte string ➜ number
+    });
     onClose();
   }
 
@@ -50,18 +68,15 @@ export default function NotificationPopup({ coin, onClose, onConfirm }: Props) {
             <option value="below">below</option>
           </select>
           &nbsp;the price of&nbsp;
-          <span className="font-semibold">
-            {currency === "BRL"
-              ? coin.current_price.toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                })
-              : (coin.current_price / 5).toLocaleString("en-US", {
-                  // conversão grossa BRL→USD só para UI demo
-                  style: "currency",
-                  currency: "USD",
-                })}
-          </span>{" "}
+          <input
+            type="text"
+            value={targetPrice}
+            onChange={(e: { target: { value: SetStateAction<string> } }) =>
+              setTargetPrice(e.target.value)
+            }
+            className="w-28 rounded bg-slate-800 px-2 py-1 text-sm ring-1
+            ring-slate-700 focus:outline-none"
+          />
           in&nbsp;
           {/* dropdown currency */}
           <select
