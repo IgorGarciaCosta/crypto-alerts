@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import { fetchMarketsBRL, type MarketCoin } from "../services/coingecko";
 import { parseCoinIds } from "../utils/coinIds";
+import { ChartBarIcon } from "@heroicons/react/24/solid";
+
 import { formatBRL, formatPercent } from "../utils/format";
 
 export function Home() {
@@ -10,6 +12,8 @@ export function Home() {
   const [data, setData] = useState<MarketCoin[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [showMore, setShowMore] = useState<boolean>(false);
 
   // Keep a ref to the current AbortController to cancel previous requests
   const abortRef = useRef<AbortController | null>(null);
@@ -90,6 +94,13 @@ export function Home() {
   // Helper to display the parsed ids under the input (feedback to user)
   const parsedIds = parseCoinIds(input);
 
+  const pctClass = (v: number | null | undefined) =>
+    v == null
+      ? "text-slate-400"
+      : v >= 0
+      ? "text-emerald-400"
+      : "text-rose-400";
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">CriptoTracker</h1>
@@ -133,8 +144,29 @@ export function Home() {
 
       {/* Result table */}
       <div className="rounded-lg border border-slate-800 overflow-hidden">
-        <div className="p-3 border-b border-slate-800">
+        <div className="p-3 border-b border-slate-800 flex items-center justify-between">
           <h2 className="font-medium">Resultado</h2>
+
+          {/* Right-side round toggle button with tooltip */}
+          <div className="relative group">
+            <button
+              type="button"
+              onClick={() => setShowMore((v) => !v)}
+              aria-pressed={showMore} //communicates toggle state
+              aria-label={showMore ? "Hide extra columns" : "Show more results"}
+              title="Show more results" // Native tooltip on hover
+              className={[
+                "h-6 w-6 rounded-full flex items-center justify-center transition-colors",
+                "ring-1 ring-slate-700",
+                showMore
+                  ? "bg-emerald-600 text-white hover:bg-emerald-500"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700",
+              ].join(" ")}
+            >
+              {/* "Report" icon (bar chart) */}
+              <ChartBarIcon className="h-3 w-3" />
+            </button>
+          </div>
         </div>
 
         {data.length === 0 ? (
@@ -148,6 +180,12 @@ export function Home() {
                 <th className="p-3">Moeda</th>
                 <th>Preço</th>
                 <th>24h</th>
+                {showMore && (
+                  <>
+                    {" "}
+                    <th>1h</th> <th>7d</th>
+                  </>
+                )}
                 <th>Atualizado</th>
               </tr>
             </thead>
@@ -156,6 +194,8 @@ export function Home() {
                 const change24h =
                   c.price_change_percentage_24h_in_currency ??
                   c.price_change_percentage_24h;
+                const change1h = c.price_change_percentage_1h_in_currency;
+                const change7d = c.price_change_percentage_7d_in_currency;
 
                 return (
                   <tr key={c.id} className="border-t border-slate-800">
@@ -180,6 +220,18 @@ export function Home() {
                     >
                       {formatPercent(change24h)}
                     </td>
+
+                    {showMore && (
+                      <>
+                        <td className={pctClass(change1h)}>
+                          {formatPercent(change1h)}
+                        </td>
+                        <td className={pctClass(change7d)}>
+                          {formatPercent(change7d)}
+                        </td>
+                      </>
+                    )}
+
                     <td className="text-slate-400">
                       {c.last_updated
                         ? new Date(c.last_updated).toLocaleTimeString("pt-BR", {
