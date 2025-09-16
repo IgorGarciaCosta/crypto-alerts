@@ -4,17 +4,7 @@ import type { MarketCoin } from "../services/coingecko";
 
 import { fiatCurrencies } from "../services/coingecko";
 
-/* ---- util simples de conversão BRL ➜ USD (demo) ---- */
-const convert = (curr: number, currency: string) => {
-  /* CoinGecko está retornando price em USD. 
-+     Para fins de demo:
-+       • USD → mantém
-+       • BRL → multiplicamos por 5 (exemplo)
-+       • Demais moedas → devolvemos o mesmo valor (sem conversão real) */
-  if (currency.toLowerCase() === "brl") return curr * 5;
-  if (currency.toLowerCase() === "usd") return curr;
-  return curr;
-};
+import { getRate } from "../services/exchange";
 
 type Props = {
   coin: MarketCoin; // moeda que o usuário clicou
@@ -42,12 +32,8 @@ export default function NotificationPopup({ coin, onClose, onConfirm }: Props) {
 
   /* editable price (string -> permite vírgula / ponto) */
   const [targetPrice, setTargetPrice] = useState<string>(
-    convert(coin.current_price, currency).toFixed(2)
+    coin.current_price.toFixed(2)
   );
-  /* quando usuário trocar "currency", recalculamos o valor base ---- */
-  useEffect(() => {
-    setTargetPrice(convert(coin.current_price, currency).toFixed(2));
-  }, [currency, coin.current_price]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,6 +43,22 @@ export default function NotificationPopup({ coin, onClose, onConfirm }: Props) {
       targetPrice: parseFloat(targetPrice.replace(",", ".")), // converte string ➜ number
     });
     onClose();
+  }
+
+  //currency exchange function
+  async function handleCurrencyCHange(newCur: string) {
+    if (newCur === currency) return;
+
+    try {
+      const rate = await getRate(currency, newCur);
+      //console.log("Rate: ", rate);
+      const oldValue = parseFloat(targetPrice.replace(",", ".")) || 0;
+      const newValue = oldValue * rate;
+      setTargetPrice(newValue.toFixed(2));
+      setCurrency(newCur);
+    } catch (err) {
+      console.error("Error fetching exchange rate:", err);
+    }
   }
 
   return (
@@ -100,7 +102,10 @@ export default function NotificationPopup({ coin, onClose, onConfirm }: Props) {
           {/* dropdown currency */}
           <select
             value={currency}
-            onChange={(e) => setCurrency(e.target.value.toLowerCase())}
+            onChange={(e) => {
+              //console.log("Currency selecionada:", e.target.value);
+              handleCurrencyCHange(e.target.value.toLowerCase());
+            }}
             className="rounded bg-slate-800 px-2 py-1 text-sm ring-1 ring-slate-700 focus:outline-none"
           >
             {/* fallback enquanto carrega a lista */}
