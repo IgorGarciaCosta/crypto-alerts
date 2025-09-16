@@ -88,7 +88,7 @@ export default function NotificationPopup({ coin, onClose, onConfirm }: Props) {
             <option value="above">above</option>
             <option value="below">below</option>
           </select>
-          &nbsp;the price of&nbsp;
+          &nbsp;the price of $&nbsp;
           <input
             type="text"
             value={targetPrice}

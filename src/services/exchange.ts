@@ -14,7 +14,7 @@ const TTL = 1000 * 60 * 60; // 1 h
  */
 export async function getRates(base: string): Promise<Rates> {
   const key = base.toUpperCase();
-  const hit = CACHE[key];
+  const hit = CACHE[key];//search in thelocal cache if theres a saved value for this base
   if (hit && Date.now() - hit.at < TTL) return hit.rates;
 
   const url = `https://open.er-api.com/v6/latest/${key}`;
