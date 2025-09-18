@@ -82,7 +82,11 @@ export function Header() {
         onSignupClicked={openSignup}
       />
 
-      <SignupPopup isOpen={isSignupPopupOpen} onClose={closeAll} />
+      <SignupPopup
+        isOpen={isSignupPopupOpen}
+        onClose={closeAll}
+        onBackToLogin={openlogin}
+      />
     </>
   );
 }

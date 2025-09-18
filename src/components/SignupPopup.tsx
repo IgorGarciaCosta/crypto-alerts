@@ -6,9 +6,10 @@ import { useEffect } from "react";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  onBackToLogin: () => void;
 };
 
-export default function SignupPopup({ isOpen, onClose }: Props) {
+export default function SignupPopup({ isOpen, onClose, onBackToLogin }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -58,6 +59,27 @@ export default function SignupPopup({ isOpen, onClose }: Props) {
         >
           {/* Cabeçalho */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            {/* Botão de voltar */}
+            <button
+              onClick={onBackToLogin} // ou uma função específica para voltar ao login
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Voltar para login"
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+
             <h2 className="text-xl font-semibold text-gray-800">Signup</h2>
             <button
               onClick={onClose}
