@@ -1,9 +1,20 @@
 import Drawer from "./Drawer";
 import { UserIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
+import LoginPopup from "./LoginPopup";
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const [isLoginPopupOpen, setIsLoginPopupOpen] = useState(false);
+
+  const IsLogged = false;
+  const handleAutentication = () => {
+    if (IsLogged) {
+      alert("is logged in");
+    } else {
+      setIsLoginPopupOpen(true);
+    }
+  };
 
   return (
     <>
@@ -24,28 +35,33 @@ export function Header() {
       {/* Drawer */}
       <Drawer open={open} onClose={() => setOpen(false)}>
         {/* qualquer conteúdo dentro do painel */}
-        <h2 className="mb-4 text-lg font-semibold">User Menu</h2>
+        <h2 className="mb-4 text-lg font-semibold">Profile</h2>
         <ul className="space-y-2 text-sm">
           <li>
             <a className="hover:text-slate-200" href="/profile">
-              Profile
+              Edit Data
             </a>
           </li>
-          <li>
-            <a className="hover:text-slate-200" href="/settings">
-              Settings
-            </a>
-          </li>
+
           <li>
             <button
-              className="mt-4 rounded bg-rose-600 px-3 py-1 font-medium hover:bg-rose-500"
-              onClick={() => alert("Logout")}
+              className={`mt-4 rounded px-3 py-1 font-medium ${
+                IsLogged
+                  ? "bg-red-600  hover:bg-red-900"
+                  : "bg-green-600  hover:bg-green-900"
+              }`}
+              onClick={handleAutentication}
             >
-              Logout
+              {IsLogged ? "Logout" : "Login"}
             </button>
           </li>
         </ul>
       </Drawer>
+
+      <LoginPopup
+        isOpen={isLoginPopupOpen}
+        onClose={() => setIsLoginPopupOpen(false)}
+      />
     </>
   );
 }
