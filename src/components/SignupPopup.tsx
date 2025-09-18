@@ -1,6 +1,7 @@
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import InputField from "./InputField";
 import { useState } from "react";
+import { useEffect } from "react";
 
 type Props = {
   isOpen: boolean;
@@ -10,11 +11,34 @@ type Props = {
 export default function SignupPopup({ isOpen, onClose }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordsMatch, setPasswordsMatch] = useState(true);
+
+  useEffect(() => {
+    if (confirmPassword && password !== confirmPassword) {
+      setPasswordsMatch(false);
+    } else {
+      setPasswordsMatch(true);
+    }
+  }, [password, confirmPassword]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    //TODO: autentication logic
 
+    // Validações adicionais
+    if (password.length < 6) {
+      alert("Password must be at least 6 characters long");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setPasswordsMatch(false);
+      return; //avoid sending the form
+    }
+
+    setPasswordsMatch(true);
+
+    //TODO : auth logic
     onClose(); //close if autentication is successful
   };
 
@@ -60,19 +84,6 @@ export default function SignupPopup({ isOpen, onClose }: Props) {
                 type="email"
                 id="email"
               />
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Repeat your email
-              </label>
-              <InputField
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                type="email"
-                id="email"
-              />
             </div>
 
             <div>
@@ -89,6 +100,27 @@ export default function SignupPopup({ isOpen, onClose }: Props) {
                 type="password"
                 id="password"
               />
+
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Repeat the password
+              </label>
+              <InputField
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repeat your password"
+                type="password"
+                id="confirmPassword"
+              />
+
+              {/* Error msg */}
+              {!passwordsMatch && (
+                <p className="text-red-600 text-sm mt-1">
+                  Passwords do not match
+                </p>
+              )}
             </div>
 
             <div className="pt-2">
