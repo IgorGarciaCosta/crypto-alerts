@@ -2,18 +2,36 @@ import Drawer from "./Drawer";
 import { UserIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import LoginPopup from "./LoginPopup";
+import SignupPopup from "./SignupPopup";
 
 export function Header() {
   const [open, setOpen] = useState(false);
   const [isLoginPopupOpen, setIsLoginPopupOpen] = useState(false);
+  const [isSignupPopupOpen, setIsSignupPopupOpen] = useState(false);
 
   const IsLogged = false;
+
   const handleAutentication = () => {
     if (IsLogged) {
       alert("is logged in");
     } else {
-      setIsLoginPopupOpen(true);
+      openlogin();
     }
+  };
+
+  const openSignup = () => {
+    setIsSignupPopupOpen(true);
+    setIsLoginPopupOpen(false);
+  };
+
+  const openlogin = () => {
+    setIsLoginPopupOpen(true);
+    setIsSignupPopupOpen(false);
+  };
+
+  const closeAll = () => {
+    setIsLoginPopupOpen(false);
+    setIsSignupPopupOpen(false);
   };
 
   return (
@@ -60,8 +78,11 @@ export function Header() {
 
       <LoginPopup
         isOpen={isLoginPopupOpen}
-        onClose={() => setIsLoginPopupOpen(false)}
+        onClose={closeAll}
+        onSignupClicked={openSignup}
       />
+
+      <SignupPopup isOpen={isSignupPopupOpen} onClose={closeAll} />
     </>
   );
 }
