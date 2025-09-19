@@ -13,7 +13,7 @@ export function Header() {
 
   const handleAutentication = () => {
     if (IsLogged) {
-      alert("is logged in");
+      alert("is logged out");
     } else {
       openlogin();
     }
