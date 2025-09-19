@@ -14,6 +14,7 @@ export default function SignupPopup({ isOpen, onClose, onBackToLogin }: Props) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordsMatch, setPasswordsMatch] = useState(true);
+  const [userName, setUserName] = useState("");
 
   const [userAlreadyExists, setUserAlreadyExists] = useState(false); // Simulação de verificação de usuário existente
 
@@ -94,6 +95,22 @@ export default function SignupPopup({ isOpen, onClose, onBackToLogin }: Props) {
           {/* Formulário */}
 
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div>
+              <label
+                htmlFor="text"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                User name
+              </label>
+              <InputField
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Your name"
+                type="text"
+                id="text"
+              />
+            </div>
+
             <div>
               <label
                 htmlFor="email"

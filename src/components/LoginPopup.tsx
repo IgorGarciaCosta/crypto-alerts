@@ -15,6 +15,7 @@ export default function LoginPopup({
 }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [userNotRegistered, setUserNotRegistered] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +66,12 @@ export default function LoginPopup({
                 type="email"
                 id="email"
               />
+              {/* user not resgisted  in msg */}
+              {userNotRegistered && (
+                <p className="text-red-600 text-sm mt-1">
+                  Email not registered
+                </p>
+              )}
             </div>
 
             <div>
