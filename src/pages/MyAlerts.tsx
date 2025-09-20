@@ -18,7 +18,7 @@ export default function MyAlerts() {
   }
 
   //busca de dadso
-  const { alerts, loading } = useAlerts(user.uid);
+  const { alerts, loading, deleteAlert } = useAlerts(user.uid);
 
   return (
     <>
@@ -61,7 +61,13 @@ export default function MyAlerts() {
 
                   <td>
                     <button
-                      onClick={() => alert("Pingas")}
+                      onClick={() => {
+                        if (confirm("Delete this alert?")) {
+                          deleteAlert(a.id).catch((err) =>
+                            alert("Failed to delete: " + err.message)
+                          );
+                        }
+                      }}
                       className="hover:cursor-pointer"
                     >
                       <svg

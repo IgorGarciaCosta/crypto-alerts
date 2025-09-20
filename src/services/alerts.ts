@@ -4,6 +4,7 @@ import {
   getDoc,
   setDoc,
   type DocumentReference,
+  deleteDoc
 } from "firebase/firestore";
       
 import {db} from "./firebase";       // exporte 'db' do firebase.ts
@@ -17,6 +18,11 @@ export type AlertData = {
 
 function buildID(d:AlertData){
     return `${d.coinId}_${d.direction}_${d.currency}_${d.targetPrice.toFixed(2)}`.toLowerCase();
+}
+
+export async function deleteAlert(uid:string, alertId:string){
+    const ref = doc(db, "users", uid, "alerts", alertId);
+    await deleteDoc (ref);
 }
 
 /**

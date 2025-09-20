@@ -8,6 +8,8 @@ import {
 } from "firebase/firestore";
 import { db } from "../services/firebase";
 
+import { deleteAlert as del, deleteAlert } from "../services/alerts";
+
 
 export type AlertDoc = {
   id: string;              // id do documento
@@ -53,5 +55,5 @@ export default function useAlerts(uid?: string | null) {
 
 
     }, [uid]);
-    return {alerts, loading};
+    return {alerts, loading, deleteAlert:(id:string)=>del(uid!, id)};
 }
