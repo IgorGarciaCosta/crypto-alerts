@@ -2,6 +2,8 @@ import { useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import InputField from "./InputField";
 
+import { login, loginWithGoogle } from "../services/firebase";
+
 type Props = {
   isOpen: boolean;
   onClose: () => void;
@@ -17,11 +19,17 @@ export default function LoginPopup({
   const [password, setPassword] = useState("");
   const [userNotRegistered, setUserNotRegistered] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     //TODO: autentication logic
 
-    onClose(); //close if autentication is successful
+    try {
+      await login(email, password);
+      onClose(); //close if autentication is successful
+    } catch (e) {
+      setUserNotRegistered(true);
+      console.log(e);
+    }
   };
 
   if (!isOpen) return null;
@@ -102,7 +110,14 @@ export default function LoginPopup({
             {/* Botão do Google */}
             <button
               type="button"
-              //onClick={alert(handleGoogleLogin)}
+              onClick={async () => {
+                try {
+                  await loginWithGoogle();
+                  onClose(); //close if autentication is successful
+                } catch (e) {
+                  console.log(e);
+                }
+              }}
               className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-md py-2 px-4 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
             >
               {/* Ícone do Google */}

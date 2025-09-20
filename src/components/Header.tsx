@@ -4,20 +4,16 @@ import { useState } from "react";
 import LoginPopup from "./LoginPopup";
 import SignupPopup from "./SignupPopup";
 
+import { useAuth } from "../context/AuthContext";
+import { logout } from "../services/firebase";
+
 export function Header() {
+  const { user, loading } = useAuth(); // user === null quando não logado
   const [open, setOpen] = useState(false);
   const [isLoginPopupOpen, setIsLoginPopupOpen] = useState(false);
   const [isSignupPopupOpen, setIsSignupPopupOpen] = useState(false);
 
-  const IsLogged = false;
-
-  const handleAutentication = () => {
-    if (IsLogged) {
-      alert("is logged out");
-    } else {
-      openlogin();
-    }
-  };
+  const isLogged = !!user;
 
   const openSignup = () => {
     setIsSignupPopupOpen(true);
@@ -64,13 +60,13 @@ export function Header() {
           <li>
             <button
               className={`mt-4 rounded px-3 py-1 font-medium ${
-                IsLogged
+                isLogged
                   ? "bg-red-600  hover:bg-red-900"
                   : "bg-green-600  hover:bg-green-900"
               }`}
-              onClick={handleAutentication}
+              onClick={isLogged ? () => logout() : openlogin}
             >
-              {IsLogged ? "Logout" : "Login"}
+              {isLogged ? "Logout" : "Login"}
             </button>
           </li>
         </ul>

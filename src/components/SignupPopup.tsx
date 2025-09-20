@@ -3,6 +3,8 @@ import InputField from "./InputField";
 import { useState } from "react";
 import { useEffect } from "react";
 
+import { signup } from "../services/firebase";
+
 type Props = {
   isOpen: boolean;
   onClose: () => void;
@@ -26,7 +28,7 @@ export default function SignupPopup({ isOpen, onClose, onBackToLogin }: Props) {
     }
   }, [password, confirmPassword]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validações adicionais
@@ -42,8 +44,13 @@ export default function SignupPopup({ isOpen, onClose, onBackToLogin }: Props) {
 
     setPasswordsMatch(true);
 
-    //TODO : auth logic
-    onClose(); //close if autentication is successful
+    try {
+      await signup(email, password);
+      onClose(); //close if signup is successful
+    } catch (e) {
+      setUserAlreadyExists(true);
+      console.log(e);
+    }
   };
 
   if (!isOpen) return null;
