@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import InputField from "./InputField";
 
@@ -18,6 +18,14 @@ export default function LoginPopup({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userNotRegistered, setUserNotRegistered] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setEmail("");
+      setPassword("");
+      setUserNotRegistered(false);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

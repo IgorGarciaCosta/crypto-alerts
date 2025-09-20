@@ -21,6 +21,17 @@ export default function SignupPopup({ isOpen, onClose, onBackToLogin }: Props) {
   const [userAlreadyExists, setUserAlreadyExists] = useState(false); // Simulação de verificação de usuário existente
 
   useEffect(() => {
+    if (isOpen) {
+      setEmail("");
+      setPassword("");
+      setUserAlreadyExists(false);
+      setPasswordsMatch(true);
+      setConfirmPassword("");
+      setUserName("");
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     if (confirmPassword && password !== confirmPassword) {
       setPasswordsMatch(false);
     } else {
