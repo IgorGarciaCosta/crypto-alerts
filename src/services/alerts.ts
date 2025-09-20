@@ -1,7 +1,12 @@
-import { getFirestore, collection, doc, setDoc } from "firebase/firestore";
-import { app } from "./firebase";      // exporte 'app' do firebase.ts
-                                      
-const db = getFirestore(app);
+import {
+  doc,
+  collection,
+  getDoc,
+  setDoc,
+  type DocumentReference,
+} from "firebase/firestore";
+      
+import {db} from "./firebase";       // exporte 'db' do firebase.ts
 
 export type AlertData = {
   coinId: string;
@@ -10,23 +15,32 @@ export type AlertData = {
   targetPrice: number;
 };
 
+function buildID(d:AlertData){
+    return `${d.coinId}_${d.direction}_${d.currency}_${d.targetPrice.toFixed(2)}`.toLowerCase();
+}
+
 /**
  * Salva um alerta; se já existir devolve { duplicate: true }.
  */
 export async function saveAlert(uid: string, data: AlertData) {
-  // ID determinístico → impede duplicados
-  const id =
-    `${data.coinId}_${data.direction}_${data.currency}_${data.targetPrice.toFixed(2)}`.toLowerCase();
+  const id = buildID(data);
+  const ref:DocumentReference = doc(collection(db, "users", uid, "alerts"), id);
 
-  const ref = doc(collection(db, "users", uid, "alerts"), id);
 
-  try {
-    await setDoc(ref, data); // cria o doc (falha se já existe)
-    return { duplicate: false };
-  } catch (e: unknown) {
-  if (e instanceof Error && 'code' in e && typeof (e as { code: unknown }).code === 'string' && e.code === "already-exists") {
+//verifica existencia
+const snap = await getDoc(ref);
+if(snap.exists()){
+    console.log("Alerta já existe");
     return { duplicate: true };
-  }
-  throw e;
 }
+
+//grava
+await setDoc(ref, data);
+console.log("Alerta salvo com sucesso");
+return { duplicate: false };
+
+
+  console.log(`Tentando salvar alerta com ID: ${id}`);
+  
+  
 }
