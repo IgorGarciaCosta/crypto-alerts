@@ -3,6 +3,7 @@
 import viteLogo from "/vite.svg"; */
 
 import { Header } from "./components/Header";
+import EditUsername from "./pages/EditUsername";
 import { Home } from "./pages/Home";
 import MyAlerts from "./pages/MyAlerts";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -16,6 +17,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/myalerts" element={<MyAlerts />} />
+          <Route path="/editusername" element={<EditUsername />} />
         </Routes>
       </Router>
     </div>

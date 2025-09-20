@@ -80,7 +80,7 @@ export function Header() {
           {isLogged && (
             <>
               <li>
-                <a className="hover:text-slate-200" href="/profile">
+                <a className="hover:text-slate-200" href="/editusername">
                   Edit username
                 </a>
               </li>
