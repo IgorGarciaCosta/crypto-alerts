@@ -1,3 +1,9 @@
+import ReturnButton from "../components/returnButton";
+
 export default function MyAlerts() {
-  return <h1>My Alerts Page - Under Construction</h1>;
+  return (
+    <>
+      <ReturnButton></ReturnButton>
+    </>
+  );
 }
