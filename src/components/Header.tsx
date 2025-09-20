@@ -1,6 +1,6 @@
 import Drawer from "./Drawer";
 import { UserIcon } from "@heroicons/react/24/solid";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LoginPopup from "./LoginPopup";
 import SignupPopup from "./SignupPopup";
 
@@ -12,7 +12,7 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [isLoginPopupOpen, setIsLoginPopupOpen] = useState(false);
   const [isSignupPopupOpen, setIsSignupPopupOpen] = useState(false);
-
+  const [imgError, setImgError] = useState(false);
   const isLogged = !!user;
 
   const openSignup = () => {
@@ -29,6 +29,13 @@ export function Header() {
     setIsLoginPopupOpen(false);
     setIsSignupPopupOpen(false);
   };
+
+  const avatar = user?.photoURL ?? ""; // string | null | undefined
+
+  /* sempre que o usuário mudar, zeramos o erro */
+  useEffect(() => {
+    setImgError(false);
+  }, [user?.uid]);
 
   return (
     <>
@@ -48,7 +55,16 @@ export function Header() {
             aria-label="Open user menu"
             className="rounded-full p-1 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
           >
-            <UserIcon className="h-5 w-5" />
+            {avatar && !imgError ? (
+              <img
+                src={avatar}
+                alt="Profile"
+                className="h-6 w-6 rounded-full object-cover"
+                onError={() => setImgError(true)} // ⬅ se falhar, troca p/ ícone
+              />
+            ) : (
+              <UserIcon className="h-5 w-5" />
+            )}
           </button>
         </div>
       </header>
