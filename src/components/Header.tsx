@@ -85,7 +85,7 @@ export function Header() {
                 </a>
               </li>
               <li>
-                <a className="hover:text-slate-200" href="/profile">
+                <a className="hover:text-slate-200" href="/myalerts">
                   My Alerts
                 </a>
               </li>
