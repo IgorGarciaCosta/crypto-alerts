@@ -35,6 +35,13 @@ export function Header() {
       <header className="w-full border-b border-slate-800 bg-slate-950">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
           <div className="text-lg font-semibold">CriptoTracker</div>
+          {/*  username if loggedin */}
+          {isLogged && (
+            <span className="mr-2 text-sm text-slate-300 ">
+              {user?.displayName ?? user?.email}
+            </span>
+          )}
+
           {/* ícone de usuário */}
           <button
             onClick={() => setOpen(true)}
@@ -53,7 +60,7 @@ export function Header() {
         <ul className="space-y-2 text-sm">
           <li>
             <a className="hover:text-slate-200" href="/profile">
-              Edit Data
+              Edit username
             </a>
           </li>
 

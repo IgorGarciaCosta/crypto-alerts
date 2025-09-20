@@ -3,7 +3,7 @@ import InputField from "./InputField";
 import { useState } from "react";
 import { useEffect } from "react";
 
-import { signup } from "../services/firebase";
+import { signup, setDisplayName } from "../services/firebase";
 
 type Props = {
   isOpen: boolean;
@@ -57,6 +57,7 @@ export default function SignupPopup({ isOpen, onClose, onBackToLogin }: Props) {
 
     try {
       await signup(email, password);
+      if (userName.trim()) await setDisplayName(userName.trim());
       onClose(); //close if signup is successful
     } catch (e) {
       setUserAlreadyExists(true);

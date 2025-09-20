@@ -1,4 +1,5 @@
 import {initializeApp} from "firebase/app";
+import { updateProfile } from "firebase/auth";
 
 import {
 getAuth,
@@ -42,4 +43,9 @@ export async function loginWithGoogle() {
 
 export async function logout() {
   return signOut(auth);
+}
+
+export async function setDisplayName(name: string) {
+  if (auth.currentUser)
+    return updateProfile(auth.currentUser, { displayName: name });
 }
