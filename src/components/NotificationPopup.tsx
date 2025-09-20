@@ -5,6 +5,8 @@ import type { MarketCoin } from "../services/coingecko";
 import { fiatCurrencies } from "../services/coingecko";
 
 import { getRate } from "../services/exchange";
+import { saveAlert } from "../services/alerts";
+import { useAuth } from "../context/AuthContext";
 
 type Props = {
   coin: MarketCoin; // moeda que o usuário clicou
@@ -21,6 +23,8 @@ export default function NotificationPopup({ coin, onClose, onConfirm }: Props) {
   const [direction, setDirection] = useState<"above" | "below">("below");
   const [currency, setCurrency] = useState<string>("usd"); // começa em usd
 
+  const { user } = useAuth();
+
   /* lista vinda do CoinGecko ------------------------------ */
   const [fiatList, setfiatList] = useState<string[]>([]);
   useEffect(() => {
@@ -35,14 +39,33 @@ export default function NotificationPopup({ coin, onClose, onConfirm }: Props) {
     coin.current_price.toFixed(2)
   );
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    onConfirm?.({
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault(); //evita o behavior defualt de recarregar a pagina ao entrar aqui
+    if (!user) {
+      alert("You must be logged in to set alerts.");
+      return;
+    }
+
+    const data = {
+      coinId: coin.id,
       direction,
       currency,
-      targetPrice: parseFloat(targetPrice.replace(",", ".")), // converte string ➜ number
-    });
-    onClose();
+      targetPrice: parseFloat(targetPrice.replace(",", ".")),
+    };
+
+    try {
+      const res = await saveAlert(user.uid, data);
+      if (res.duplicate) {
+        alert("Alert already exists!");
+        return;
+      } else {
+        onConfirm?.({ direction, currency, targetPrice: data.targetPrice });
+      }
+      onClose();
+    } catch (err) {
+      console.error("Error saving alert:", err);
+      alert("Error saving alert. Please try again later.");
+    }
   }
 
   //currency exchange function

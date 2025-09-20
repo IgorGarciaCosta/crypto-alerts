@@ -77,11 +77,20 @@ export function Header() {
         {/* qualquer conteúdo dentro do painel */}
         <h2 className="mb-4 text-lg font-semibold">Profile</h2>
         <ul className="space-y-2 text-sm">
-          <li>
-            <a className="hover:text-slate-200" href="/profile">
-              Edit username
-            </a>
-          </li>
+          {isLogged && (
+            <>
+              <li>
+                <a className="hover:text-slate-200" href="/profile">
+                  Edit username
+                </a>
+              </li>
+              <li>
+                <a className="hover:text-slate-200" href="/profile">
+                  My Alerts
+                </a>
+              </li>
+            </>
+          )}
 
           <li>
             <button

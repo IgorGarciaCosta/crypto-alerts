@@ -1,5 +1,6 @@
 import {initializeApp} from "firebase/app";
 import { updateProfile } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 import {
 getAuth,
@@ -20,8 +21,9 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+export const app  = initializeApp(firebaseConfig);   // ⬅ exporta app
 export const auth = getAuth(app);
+export const db   = getFirestore(app);               // ⬅ exporta db
 
 /* ---------- helpers simples ---------- */
 export function listenAuth(cb: (u: User | null) => void) {
