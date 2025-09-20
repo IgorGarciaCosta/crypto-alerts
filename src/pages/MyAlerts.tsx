@@ -12,7 +12,7 @@ export default function MyAlerts() {
     return (
       <div className="p-8 text-center">
         <p className="mb-4 text-lg">You must be logged in to view alerts</p>
-        <ReturnButton />
+        <ReturnButton path="" />
       </div>
     );
   }
@@ -23,7 +23,7 @@ export default function MyAlerts() {
   return (
     <>
       <div className="pt-10">
-        <ReturnButton />
+        <ReturnButton path="" />
       </div>
 
       <div className="p-8 max-w-3xl mx-auto">

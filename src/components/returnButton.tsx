@@ -1,13 +1,17 @@
 import { useNavigate } from "react-router-dom";
 
-export default function ReturnButton() {
+type Props = {
+  path: string;
+};
+
+export default function ReturnButton({ path }: Props) {
   const navigate = useNavigate();
 
   return (
     <>
       <div>
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/" + path)}
           className="fixed top-20 left-4 bg-slate-800 hover:bg-slate-700 text-white p-2 rounded-full shadow-lg z-50"
           aria-label="Voltar"
         >
