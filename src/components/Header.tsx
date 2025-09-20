@@ -42,30 +42,33 @@ export function Header() {
       <header className="w-full border-b border-slate-800 bg-slate-950">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
           <div className="text-lg font-semibold">CriptoTracker</div>
-          {/*  username if loggedin */}
-          {isLogged && (
-            <span className="mr-2 text-sm text-slate-300 ">
-              {user?.displayName ?? user?.email}
-            </span>
-          )}
 
-          {/* ícone de usuário */}
-          <button
-            onClick={() => setOpen(true)}
-            aria-label="Open user menu"
-            className="rounded-full p-1 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
-          >
-            {avatar && !imgError ? (
-              <img
-                src={avatar}
-                alt="Profile"
-                className="h-6 w-6 rounded-full object-cover"
-                onError={() => setImgError(true)} // ⬅ se falhar, troca p/ ícone
-              />
-            ) : (
-              <UserIcon className="h-5 w-5" />
+          <div className="flex items-center gap-2">
+            {/*  username if loggedin */}
+            {isLogged && (
+              <span className="mr-2 text-sm text-slate-300 ">
+                {user?.displayName ?? user?.email}
+              </span>
             )}
-          </button>
+
+            {/* ícone de usuário */}
+            <button
+              onClick={() => setOpen(true)}
+              aria-label="Open user menu"
+              className="rounded-full p-1 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
+            >
+              {avatar && !imgError ? (
+                <img
+                  src={avatar}
+                  alt="Profile"
+                  className="h-6 w-6 rounded-full object-cover"
+                  onError={() => setImgError(true)} // ⬅ se falhar, troca p/ ícone
+                />
+              ) : (
+                <UserIcon className="h-5 w-5" />
+              )}
+            </button>
+          </div>
         </div>
       </header>
 
