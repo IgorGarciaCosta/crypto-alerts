@@ -99,7 +99,7 @@ export default function NotificationPopup({ coin, onClose, onConfirm }: Props) {
         </button>
 
         {/* mensagem principal */}
-        <p className="mb-4 leading-relaxed">
+        <p className="mb-4 leading-relaxed flex items-center flex-wrap gap-1 justify-center">
           Send me a notification as soon as{" "}
           <span className="font-semibold">{coin.name}</span> goes&nbsp;
           {/* dropdown direction */}
@@ -121,7 +121,7 @@ export default function NotificationPopup({ coin, onClose, onConfirm }: Props) {
             className="w-28 rounded bg-slate-800 px-2 py-1 text-sm ring-1
             ring-slate-700 focus:outline-none"
           />
-          in&nbsp;
+          &nbsp;in &nbsp;
           {/* dropdown currency */}
           <select
             value={currency}
@@ -141,7 +141,6 @@ export default function NotificationPopup({ coin, onClose, onConfirm }: Props) {
               </option>
             ))}
           </select>
-          .
         </p>
 
         {/* botão Set Alert */}

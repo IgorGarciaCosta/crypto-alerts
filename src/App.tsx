@@ -6,6 +6,8 @@ import { Header } from "./components/Header";
 import EditUsername from "./pages/EditUsername";
 import { Home } from "./pages/Home";
 import MyAlerts from "./pages/MyAlerts";
+import Footer from "./components/Footer";
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
@@ -19,6 +21,8 @@ function App() {
           <Route path="/myalerts" element={<MyAlerts />} />
           <Route path="/editusername" element={<EditUsername />} />
         </Routes>
+
+        <Footer></Footer>
       </Router>
     </div>
   );
