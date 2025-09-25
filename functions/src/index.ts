@@ -1,111 +1,126 @@
-/*  functions/src/index.ts  (v1 – Spark)  */
+/*  functions/src/index.ts  ——  versão “e-mail”  */
 import * as functions from "firebase-functions/v1";
 import * as admin     from "firebase-admin";
-import fetch          from "node-fetch";
+import nodemailer     from "nodemailer";
 
 admin.initializeApp();
 const db = admin.firestore();
 
-/* ========= Config / util ========= */
-const TELE_TOKEN = functions.config().telegram?.token;
-const TG_API = `https://api.telegram.org/bot${TELE_TOKEN}`;
 
-async function sendTG(chatId: number, text: string): Promise<void> {
-  if (!TELE_TOKEN) return;
-  const resp = await fetch(`${TG_API}/sendMessage`, {
-    method : "POST",
-    headers: { "Content-Type": "application/json" },
-    body   : JSON.stringify({ chat_id: chatId, text }),
-  });
-  if (!resp.ok) {
-    const body = await resp.text();
-    throw new Error(`Telegram error ${resp.status} → ${body}`);
-  }
+
+/* ---------- SMTP transporter ---------- */
+const mailUser = functions.config().mail.user;
+const mailPass = functions.config().mail.pass;
+const mailFrom = functions.config().mail.from;   // "Cripto Alerts" <xyz@gmail.com>
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",            // troque se usar SendGrid, Mailgun, etc.
+  auth: { user: mailUser, pass: mailPass },
+});
+
+/* util */
+async function sendMail(to: string, subject: string, text: string) {
+  await transporter.sendMail({ from: mailFrom, to, subject, text });
 }
 
-/* ─────────── Webhook ─────────── */
-export const telegramWebhook = functions
-  .region("us-central1")
-  .https.onRequest(async (req, res): Promise<void> => {   // *** Promise<void>
+/* ========== callable opcional p/ testes ==========
+*/
+export const sendEmail = functions.region("us-central1")
+  .https.onCall(async (data) => {
+    const { to, subject, text } = data as { to:string; subject:string; text:string };
+    if (!to || !subject || !text)
+      throw new functions.https.HttpsError("invalid-argument", "Missing fields");
+    await sendMail(to, subject, text);
+    return { ok: true };
+  });
+
+/* ========== job que verifica alertas a cada 5 min ========== */
+export const checkAlerts = functions.region("us-central1")
+  .pubsub.schedule("every 5 minutes").onRun(async () => {
     try {
-      const update = req.body;
-      if (!update?.message) {
-        res.sendStatus(200);                              // ***
-        return;                                           // ***
+      const snap = await db.collectionGroup("alerts")
+                            .where("triggered", "==", false)
+                            .get();
+      if (snap.empty) {
+        console.log("checkAlerts: Nenhum alerta pendente encontrado.");
+        return;
       }
 
-      const msg  = update.message;
-      const chat = msg.chat;
-      const text = msg.text ?? "";
 
-      if (text.startsWith("/start")) {
-        const parts = text.split(" ");
-        if (parts.length === 2) {
-          const uid = parts[1].trim();
-          await db.doc(`users/${uid}`).set(
-            { telegramChatId: chat.id },
-            { merge: true }
-          );
-          await sendTG(chat.id, "✅ Telegram conectado! Você receberá alertas aqui.");
-        } else {
-          await sendTG(chat.id, "Envie /start <código-do-app>.");
+
+      try {
+        console.log("Tentando ler dados do Firestore...");
+        const snapshot = await db.collection("alerts").get();
+        console.log(`Encontrados ${snapshot.size} documentos.`);
+      } catch (error) {
+        console.error("Erro ao acessar Firestore:", error);
+      }
+
+
+
+      const ids = new Set<string>();
+      const vs  = new Set<string>();
+      snap.docs.forEach(d => {
+        const a = d.data() as any;
+        ids.add(a.coinId);
+        vs.add(a.currency);
+      });
+      console.log(`checkAlerts: Encontrados alertas para moedas: ${[...ids].join(", ")}`);
+
+      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${[...ids].join(",")}&vs_currencies=${[...vs].join(",")}`;
+      const prices = await fetch(url).then(r => r.json());
+      const batch = db.batch();
+
+      for (const doc of snap.docs) {
+        const a = doc.data() as any;
+        const current = prices[a.coinId]?.[a.currency];
+        if (current == null) {
+          console.warn(`Preço atual não encontrado para ${a.coinId} em ${a.currency}`);
+          continue;
+        }
+
+        const hit =
+          (a.direction === "above" && current >= a.targetPrice) ||
+          (a.direction === "below" && current <= a.targetPrice);
+        if (!hit) continue;
+
+        try {
+          const uid = doc.ref.path.split("/")[1];
+          const user = await admin.auth().getUser(uid);
+          const to = user.email;
+          if (!to) {
+            console.warn(`Usuário ${uid} não tem e-mail cadastrado.`);
+            continue;
+          }
+
+          const subject = `⏰ ${a.coinId.toUpperCase()} hit your alert`;
+          const text = [
+            `Hi, I'm reaching out to let you know that ${a.coinId} is now ${a.direction} your target price of ${a.targetPrice} ${a.currency}. The current price is ${current} ${a.currency}.`,
+            "",
+            "",
+            `Currency : ${a.coinId}`,
+            `Direction: ${a.direction}`,
+            `Target Price   : ${a.targetPrice} ${a.currency}`,
+            `Current Price  : ${current} ${a.currency}`,
+            "",
+            "Automatically generated by CriptoTracker",
+          ].join("\n");
+
+          await sendMail(to, subject, text);
+          console.log(`E-mail enviado para ${to} - Assunto: ${subject}`);
+
+          batch.update(doc.ref, {
+            triggered: true,
+            triggeredAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        } catch (error) {
+          console.error(`Erro no processamento do alerta para doc ${doc.id}:`, error);
         }
       }
-      res.sendStatus(200);                                // ***
-    } catch (e) {
-      console.error(e);
-      res.sendStatus(500);                                // ***
+
+      await batch.commit();
+      console.log("checkAlerts: Batch commit realizado com sucesso.");
+    } catch (error) {
+      console.error("Erro geral na função checkAlerts:", error);
     }
-  });                                                     // *** não retorna nada
-
-/* ─────────── Scheduler ─────────── */
-export const checkAlerts = functions
-  .region("us-central1")
-  .pubsub.schedule("every 5 minutes")
-  .onRun(async (): Promise<void> => {                     // *** Promise<void>
-
-    const snap = await db.collectionGroup("alerts")
-                         .where("triggered", "==", false)
-                         .get();
-    if (snap.empty) return;
-
-    const ids = new Set<string>();
-    const vs  = new Set<string>();
-    snap.docs.forEach(d => {
-      const a = d.data() as any;
-      ids.add(a.coinId);
-      vs.add(a.currency);
-    });
-
-    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${[...ids].join(",")}&vs_currencies=${[...vs].join(",")}`;
-
-    type Prices = Record<string, Record<string, number>>;
-    const prices = await fetch(url).then(r => r.json()) as Prices;   // ***
-
-    const batch = db.batch();
-    for (const doc of snap.docs) {
-      const a = doc.data() as any;
-      const current = prices[a.coinId]?.[a.currency];
-      if (current == null) continue;
-
-      const hit =
-        (a.direction === "above" && current >= a.targetPrice) ||
-        (a.direction === "below" && current <= a.targetPrice);
-      if (!hit) continue;
-
-      const uid     = doc.ref.path.split("/")[1];
-      const userDoc = await db.doc(`users/${uid}`).get();
-      const chatId  = userDoc.get("telegramChatId");
-      if (!chatId) continue;
-
-      const msg = `⏰ ${a.coinId.toUpperCase()} está ${a.direction} ${a.targetPrice} ${a.currency}\nPreço atual: ${current} ${a.currency}`;
-      await sendTG(chatId, msg);
-
-      batch.update(doc.ref, {
-        triggered  : true,
-        triggeredAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-    }
-
-    await batch.commit();
   });

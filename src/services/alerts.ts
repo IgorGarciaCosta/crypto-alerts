@@ -3,8 +3,9 @@ import {
   collection,
   getDoc,
   setDoc,
-  type DocumentReference,
-  deleteDoc
+  deleteDoc,
+  FieldValue,
+  serverTimestamp
 } from "firebase/firestore";
       
 import {db} from "./firebase";       // exporte 'db' do firebase.ts
@@ -14,6 +15,8 @@ export type AlertData = {
   direction: "above" | "below";
   currency: string;
   targetPrice: number;
+    triggered?: boolean;          
+  createdAt?: FieldValue;       
 };
 
 function buildID(d:AlertData){
@@ -30,20 +33,23 @@ export async function deleteAlert(uid:string, alertId:string){
  */
 export async function saveAlert(uid: string, data: AlertData) {
   const id = buildID(data);
-  const ref:DocumentReference = doc(collection(db, "users", uid, "alerts"), id);
+  const ref = doc(collection(db, "users", uid, "alerts"), id);
 
 
-//verifica existencia
-const snap = await getDoc(ref);
-if(snap.exists()){
-    console.log("Alerta já existe");
-    return { duplicate: true };
-}
+  //verifica existencia
+  const snap = await getDoc(ref);
+  if(snap.exists()){
+      console.log("Alerta já existe");
+      return { duplicate: true };
+  }
 
-//grava
-await setDoc(ref, data);
-console.log("Alerta salvo com sucesso");
-return { duplicate: false };
+  //grava
+  await setDoc(ref, {
+    ...data,
+    triggered : false,
+    createdAt : serverTimestamp()
+  });
+  return { duplicate: false };
 
 
   console.log(`Tentando salvar alerta com ID: ${id}`);
