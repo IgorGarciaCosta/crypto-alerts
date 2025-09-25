@@ -8,7 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { logout } from "../services/firebase";
 
 export function Header() {
-  const { user, loading } = useAuth(); // user === null quando não logado
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [isLoginPopupOpen, setIsLoginPopupOpen] = useState(false);
   const [isSignupPopupOpen, setIsSignupPopupOpen] = useState(false);
