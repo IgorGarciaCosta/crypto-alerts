@@ -8,7 +8,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../services/firebase";
 
-import { deleteAlert as del, deleteAlert } from "../services/alerts";
+import { deleteAlert as del } from "../services/alerts";
 
 
 export type AlertDoc = {
