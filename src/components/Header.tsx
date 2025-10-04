@@ -41,7 +41,14 @@ export function Header() {
     <>
       <header className="w-full border-b border-slate-800 bg-slate-950">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-          <div className="text-lg font-semibold">CriptoTracker</div>
+          <div className="flex items-center gap-2">
+            <img
+              src="CTlogoSmall.png"
+              alt="Logo CriptoTracker"
+              className="h-8 w-9" // Ajuste o tamanho conforme necessário
+            />
+            <div className="text-lg font-semibold">CriptoTracker</div>
+          </div>
 
           <div className="flex items-center gap-2">
             {/*  username if loggedin */}

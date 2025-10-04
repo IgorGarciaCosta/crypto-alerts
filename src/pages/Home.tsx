@@ -113,7 +113,11 @@ export function Home() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="text-3xl font-bold mb-4">CriptoTracker</h1>
+      <img
+        src="/CTlogoMain.png"
+        alt="Logo CriptoTracker"
+        className="h-15 w-45 mb-5"
+      />
 
       {/* Search and action area */}
       <form onSubmit={handleGetData} className="mb-6 space-y-3">
